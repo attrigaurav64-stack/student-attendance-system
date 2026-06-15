@@ -1,0 +1,177 @@
+{% extends "_layout.html" %}
+{% set active = "student" %}
+
+{% block title %}Student Overview{% endblock %}
+{% block page_title %}Student Overview{% endblock %}
+{% block page_subtitle %}Attendance summary and recent notices for your student account.{% endblock %}
+
+{% block page_actions %}
+<a class="btn" href="/student_attendance">View attendance</a>
+<a class="btn secondary" href="/student_export_attendance">Download report</a>
+{% endblock %}
+
+{% block content %}
+<section class="stats-grid">
+    <div class="stat-card">
+        <span>Total Classes</span>
+        <strong>{{ total_classes }}</strong>
+        <small>Attendance entries</small>
+    </div>
+    <div class="stat-card">
+        <span>Present</span>
+        <strong>{{ present_count }}</strong>
+        <small>Classes attended</small>
+    </div>
+    <div class="stat-card">
+        <span>Absent</span>
+        <strong>{{ absent_count }}</strong>
+        <small>Classes missed</small>
+    </div>
+    <div class="stat-card">
+        <span>Attendance Rate</span>
+        <strong>{{ percentage }}%</strong>
+        <small>Based on submitted records</small>
+    </div>
+</section>
+
+<section class="dashboard-charts">
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>My Attendance Split</h2>
+                <p class="subtle">Personal present and absent record ratio.</p>
+            </div>
+        </div>
+        <div class="donut-wrap">
+            <div class="donut-chart neutral" style="--value: {{ percentage }};">
+                <div class="donut-center">
+                    <div>
+                        <strong>{{ percentage }}%</strong>
+                        <span>Present</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-legend">
+                <span><i class="legend-dot green"></i>{{ present_count }} present</span>
+                <span><i class="legend-dot red"></i>{{ absent_count }} absent</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Subject Breakdown</h2>
+                <p class="subtle">Personal attendance records grouped by subject.</p>
+            </div>
+        </div>
+        <div class="bar-list">
+            {% for subject, total, subject_present, subject_absent in subject_summary %}
+            <div class="bar-row">
+                <span class="bar-label">{{ subject }}</span>
+                <div class="stacked-bar">
+                    <span class="present" style="--present-width: {{ (subject_present / total * 100) if total else 0 }}%;"></span>
+                    <span class="absent" style="--absent-width: {{ (subject_absent / total * 100) if total else 0 }}%;"></span>
+                </div>
+                <span class="bar-value">{{ total }}</span>
+            </div>
+            {% else %}
+            <div class="empty-state">No subject attendance data available yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Recent Trend</h2>
+            <p class="subtle">Daily personal attendance rate from recent records.</p>
+        </div>
+    </div>
+    <div class="bar-list">
+        {% for date, day_present, day_total in attendance_trend %}
+        <div class="bar-row">
+            <span class="bar-label">{{ date }}</span>
+            <div class="bar-track">
+                <div class="bar-fill green" style="--width: {{ (day_present / day_total * 100) if day_total else 0 }}%;"></div>
+            </div>
+            <span class="bar-value">{{ ((day_present / day_total * 100) | round(0)) if day_total else 0 }}%</span>
+        </div>
+        {% else %}
+        <div class="empty-state">No attendance trend available yet.</div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="grid-2">
+    <div class="panel">
+        <div class="panel-header">
+            <h2>Profile</h2>
+            <a class="btn secondary" href="/student_profile">Open profile</a>
+        </div>
+        {% if student %}
+        <div class="profile-summary">
+            {% if student[7] %}
+            <img class="avatar large" src="{{ url_for('static', filename=student[7].replace('static/', '')) }}" alt="Student photo">
+            {% else %}
+            <div class="avatar large fallback-avatar">{{ student[1][0] if student[1] else '?' }}</div>
+            {% endif %}
+            <div>
+                <h2>{{ student[1] }}</h2>
+                <p class="subtle">Roll No {{ student[0] }} | {{ student[2] }} | Semester {{ student[3] }}</p>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">No student profile matches this login.</div>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>Recent Notices</h2>
+        </div>
+        <div class="notice-list">
+            {% for notice in notices %}
+            <div class="record-card">
+                <h3>{{ notice[1] }}</h3>
+                <p>{{ notice[2] }}</p>
+                <span class="subtle">{{ notice[3] }}</span>
+            </div>
+            {% else %}
+            <div class="empty-state">No notices have been published.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>Recent Attendance</h2>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records[:8] %}
+                <tr>
+                    <td>{{ record[3] }}</td>
+                    <td>{{ record[4] }}</td>
+                    <td><span class="badge {{ 'present' if record[5] == 'Present' else 'absent' }}">{{ record[5] }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="empty-state">No attendance records yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

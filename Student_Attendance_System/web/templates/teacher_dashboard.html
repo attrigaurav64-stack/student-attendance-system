@@ -1,0 +1,159 @@
+{% extends "_layout.html" %}
+{% set active = "teacher" %}
+
+{% block title %}Teacher Overview{% endblock %}
+{% block page_title %}Teacher Overview{% endblock %}
+{% block page_subtitle %}Today's attendance status and teaching actions.{% endblock %}
+
+{% block page_actions %}
+<a class="btn" href="/mark_attendance">Mark attendance</a>
+<a class="btn secondary" href="/train_face_model">Train face model</a>
+<a class="btn secondary" href="/start_face_attendance">Start face attendance</a>
+{% endblock %}
+
+{% block content %}
+{% if face_message %}
+<div class="alert {% if face_status == 'success' %}success{% endif %}">{{ face_message }}</div>
+{% endif %}
+
+<section class="stats-grid">
+    <div class="stat-card">
+        <span>Students</span>
+        <strong>{{ total_students }}</strong>
+        <small>Available for attendance</small>
+    </div>
+    <div class="stat-card">
+        <span>Present Today</span>
+        <strong>{{ present_today }}</strong>
+        <small>Marked present</small>
+    </div>
+    <div class="stat-card">
+        <span>Absent Today</span>
+        <strong>{{ absent_today }}</strong>
+        <small>Marked absent</small>
+    </div>
+    <div class="stat-card">
+        <span>Today Rate</span>
+        <strong>{{ percentage }}%</strong>
+        <small>Present share for today</small>
+    </div>
+</section>
+
+<section class="dashboard-charts">
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Today Split</h2>
+                <p class="subtle">Present and absent records submitted today.</p>
+            </div>
+        </div>
+        <div class="donut-wrap">
+            <div class="donut-chart" style="--value: {{ percentage }};">
+                <div class="donut-center">
+                    <div>
+                        <strong>{{ percentage }}%</strong>
+                        <span>Present</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-legend">
+                <span><i class="legend-dot green"></i>{{ present_today }} present</span>
+                <span><i class="legend-dot red"></i>{{ absent_today }} absent</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Recent Daily Activity</h2>
+                <p class="subtle">Submitted attendance records by date.</p>
+            </div>
+        </div>
+        <div class="trend-list">
+            {% for date, present_count, absent_count in daily_activity %}
+            {% set total = present_count + absent_count %}
+            <div class="trend-row">
+                <span class="trend-date">{{ date }}</span>
+                <div class="stacked-bar">
+                    <span class="present" style="--present-width: {{ (present_count / total * 100) if total else 0 }}%;"></span>
+                    <span class="absent" style="--absent-width: {{ (absent_count / total * 100) if total else 0 }}%;"></span>
+                </div>
+                <span class="bar-value">{{ total }}</span>
+            </div>
+            {% else %}
+            <div class="empty-state">No attendance activity has been submitted yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Subject Load</h2>
+            <p class="subtle">Attendance records grouped by subject.</p>
+        </div>
+    </div>
+    <div class="bar-list">
+        {% for subject, total in subject_load %}
+        <div class="bar-row">
+            <span class="bar-label">{{ subject }}</span>
+            <div class="bar-track">
+                <div class="bar-fill amber" style="--width: {{ (total / max_subject_load * 100) if max_subject_load else 0 }}%;"></div>
+            </div>
+            <span class="bar-value">{{ total }}</span>
+        </div>
+        {% else %}
+        <div class="empty-state">No subject records available yet.</div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="grid-2">
+    <div class="panel">
+        <div class="panel-header">
+            <h2>Attendance Work</h2>
+        </div>
+        <div class="notice-list">
+            <a class="record-card" href="/mark_attendance">
+                <h3>Manual attendance</h3>
+                <p>Record present or absent status for each registered student.</p>
+            </a>
+            <a class="record-card" href="/train_face_model">
+                <h3>Train face model</h3>
+                <p>Build the recognizer from uploaded student face photos.</p>
+            </a>
+            <a class="record-card" href="/start_face_attendance">
+                <h3>Face attendance</h3>
+                <p>Open the camera and mark recognized students automatically.</p>
+            </a>
+            <a class="record-card" href="/view_attendance">
+                <h3>Review records</h3>
+                <p>Search attendance by student, date, and subject.</p>
+            </a>
+            <a class="record-card" href="/low_attendance">
+                <h3>Low attendance</h3>
+                <p>Check students below the 75% attendance threshold.</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <h2>Recent Notices</h2>
+        </div>
+        <div class="notice-list">
+            {% for notice in notices %}
+            <div class="record-card">
+                <h3>{{ notice[1] }}</h3>
+                <p>{{ notice[2] }}</p>
+                <span class="subtle">{{ notice[3] }}</span>
+            </div>
+            {% else %}
+            <div class="empty-state">No notices have been published.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

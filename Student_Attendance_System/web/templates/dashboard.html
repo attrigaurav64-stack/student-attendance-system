@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+    name="viewport"
+    content="width=device-width,
+    initial-scale=1.0">
+
+    <title>
+        Dashboard
+    </title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static',
+    filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <h2>
+                AttendancePro
+            </h2>
+
+        </div>
+
+        <nav>
+
+            <a href="/dashboard"
+            class="active">
+
+                Dashboard
+
+            </a>
+
+            <a href="/report">
+
+                Reports
+
+            </a>
+
+            <a href="/export">
+
+                Export Excel
+
+            </a>
+
+            <a href="/logout">
+
+                Logout
+
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <!-- Main Content -->
+
+    <main class="main-content">
+
+        <!-- Header -->
+
+        <div class="header">
+
+            <div>
+
+                <h1>
+                    Student Attendance
+                </h1>
+
+                <p>
+                    Manage student
+                    attendance professionally
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Stats Cards -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <h3>
+                    Total Students
+                </h3>
+
+                <p>
+                    {{ students|length }}
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h3>
+                    Attendance
+                </h3>
+
+                <p>
+                    Active
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Add Student -->
+
+        <section class="card">
+
+            <h2>
+                Add Student
+            </h2>
+
+            <form
+            action="/add_student"
+            method="POST"
+            class="form-grid">
+
+                <input
+                type="text"
+                name="roll_no"
+                placeholder=
+                "Enter Roll Number"
+                required>
+
+                <input
+                type="text"
+                name="name"
+                placeholder=
+                "Enter Student Name"
+                required>
+
+                <button
+                type="submit">
+
+                Add Student
+
+                </button>
+
+            </form>
+
+        </section>
+
+        <!-- Search -->
+
+        <section class="card">
+
+            <h2>
+                Search Student
+            </h2>
+
+            <form
+            action="/dashboard"
+            method="GET"
+            class="search-box">
+
+                <input
+                type="text"
+                name="search"
+                placeholder=
+                "Search by Roll Number">
+
+                <button
+                type="submit">
+
+                Search
+
+                </button>
+
+            </form>
+
+        </section>
+
+        <!-- Student Table -->
+
+        <section class="card">
+
+            <div
+            class="table-header">
+
+                <h2>
+                    Student Records
+                </h2>
+
+            </div>
+
+            <div
+            class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Roll No
+                            </th>
+
+                            <th>
+                                Student Name
+                            </th>
+
+                            <th>
+                                Present
+                            </th>
+
+                            <th>
+                                Absent
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for student in students %}
+
+                    <tr>
+
+                        <td>
+                            {{ student[0] }}
+                        </td>
+
+                        <td>
+                            {{ student[1] }}
+                        </td>
+
+                        <td>
+
+                            <a href=
+"/mark_attendance/{{ student[0] }}/P">
+
+                            <button
+                            class="present-btn">
+
+                            Present
+
+                            </button>
+
+                            </a>
+
+                        </td>
+
+                        <td>
+
+                            <a href=
+"/mark_attendance/{{ student[0] }}/A">
+
+                            <button
+                            class="absent-btn">
+
+                            Absent
+
+                            </button>
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

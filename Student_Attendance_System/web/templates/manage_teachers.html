@@ -1,0 +1,96 @@
+{% extends "_layout.html" %}
+{% set active = "teachers" %}
+
+{% block title %}Teachers{% endblock %}
+{% block page_title %}Teachers{% endblock %}
+{% block page_subtitle %}Maintain teacher records and their login credentials.{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <h2>Add Teacher</h2>
+    </div>
+    <form action="/add_teacher" method="POST" class="form-grid">
+        <div class="form-row">
+            <label>Teacher ID <span class="field-hint">Auto if blank</span></label>
+            <input type="text" name="teacher_id" placeholder="TCH-0001">
+        </div>
+        <div class="form-row">
+            <label>Name</label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="form-row">
+            <label>Subject</label>
+            <input type="text" name="subject" required>
+        </div>
+        <div class="form-row">
+            <label>Department</label>
+            <input type="text" name="department" required>
+        </div>
+        <div class="form-row">
+            <label>Email <span class="field-hint">Optional</span></label>
+            <input type="email" name="email">
+        </div>
+        <div class="form-row">
+            <label>Phone <span class="field-hint">Optional</span></label>
+            <input type="text" name="phone">
+        </div>
+        <div class="form-row">
+            <label>Password</label>
+            <input type="text" name="password" required>
+        </div>
+        <div class="form-row">
+            <label>&nbsp;</label>
+            <button class="btn" type="submit">Save teacher</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Teacher Directory</h2>
+            <p class="subtle">{{ teachers|length }} teacher{{ '' if teachers|length == 1 else 's' }} registered.</p>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Subject</th>
+                    <th>Department</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Login ID</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for teacher in teachers %}
+                <tr>
+                    <td>{{ teacher[0] }}</td>
+                    <td>{{ teacher[1] }}</td>
+                    <td>{{ teacher[2] }}</td>
+                    <td>{{ teacher[3] }}</td>
+                    <td>{{ teacher[4] }}</td>
+                    <td>{{ teacher[5] }}</td>
+                    <td>{{ teacher[6] }}</td>
+                    <td>
+                        <div class="actions">
+                            <a class="btn secondary" href="/edit_teacher/{{ teacher[0] }}">Edit</a>
+                            <a class="btn danger" href="/delete_teacher/{{ teacher[0] }}" onclick="return confirm('Delete this teacher?')">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="empty-state">No teachers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

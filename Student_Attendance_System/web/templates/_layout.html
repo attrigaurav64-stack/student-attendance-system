@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AttendancePro{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand-mark">
+                <h2>AttendancePro</h2>
+                <p>{{ session.get('role', 'Portal')|title }} workspace</p>
+            </div>
+
+            <nav class="nav-group">
+                {% if session.get('role') == 'admin' %}
+                <a href="/admin" class="{% if active == 'admin' %}active{% endif %}">Overview</a>
+                <a href="/manage_students" class="{% if active == 'students' %}active{% endif %}">Students</a>
+                <a href="/manage_teachers" class="{% if active == 'teachers' %}active{% endif %}">Teachers</a>
+                <a href="/manage_notices" class="{% if active == 'notices' %}active{% endif %}">Notices</a>
+                <a href="/view_attendance" class="{% if active == 'attendance' %}active{% endif %}">Attendance</a>
+                <a href="/monthly_report" class="{% if active == 'reports' %}active{% endif %}">Reports</a>
+                <a href="/attendance_analytics" class="{% if active == 'analytics' %}active{% endif %}">Analytics</a>
+                {% elif session.get('role') == 'teacher' %}
+                <a href="/teacher" class="{% if active == 'teacher' %}active{% endif %}">Overview</a>
+                <a href="/mark_attendance" class="{% if active == 'mark' %}active{% endif %}">Mark Attendance</a>
+                <a href="/view_attendance" class="{% if active == 'attendance' %}active{% endif %}">Attendance</a>
+                <a href="/monthly_report" class="{% if active == 'reports' %}active{% endif %}">Reports</a>
+                <a href="/attendance_analytics" class="{% if active == 'analytics' %}active{% endif %}">Analytics</a>
+                <a href="/low_attendance" class="{% if active == 'low' %}active{% endif %}">Low Attendance</a>
+                {% elif session.get('role') == 'student' %}
+                <a href="/student" class="{% if active == 'student' %}active{% endif %}">Overview</a>
+                <a href="/student_profile" class="{% if active == 'profile' %}active{% endif %}">Profile</a>
+                <a href="/student_attendance" class="{% if active == 'student_attendance' %}active{% endif %}">Attendance</a>
+                {% endif %}
+            </nav>
+
+            <div class="sidebar-footer">
+                <div>{{ session.get('username', 'Signed in') }}</div>
+                <div class="sidebar-footer-action">
+                    <a href="/logout" class="btn secondary">Log out</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="page">
+            <header class="page-header">
+                <div class="page-title">
+                    <h1>{% block page_title %}{% endblock %}</h1>
+                    {% if self.page_subtitle() %}
+                    <p>{% block page_subtitle %}{% endblock %}</p>
+                    {% endif %}
+                </div>
+                <div class="page-actions">
+                    {% block page_actions %}{% endblock %}
+                </div>
+            </header>
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+
+</html>

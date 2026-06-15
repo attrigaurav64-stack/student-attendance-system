@@ -1,0 +1,242 @@
+{% extends "_layout.html" %}
+{% set active = "mark" %}
+
+{% block title %}Mark Attendance{% endblock %}
+{% block page_title %}Mark Attendance{% endblock %}
+{% block page_subtitle %}Submit today's attendance for every registered student.{% endblock %}
+
+{% block page_actions %}
+<a class="btn secondary" href="/teacher">Back to overview</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel attendance-subject-panel">
+    <div class="panel-header">
+        <div class="form-row subject-control">
+            <label>Subject</label>
+            <select name="subject" id="attendance-subject" form="manual-attendance-form" required>
+                <option value="Python" selected>Python</option>
+                <option value="Java">Java</option>
+                <option value="DBMS">DBMS</option>
+                <option value="Operating System">Operating System</option>
+            </select>
+        </div>
+        <div class="actions">
+            <button class="btn" type="submit" form="manual-attendance-form">Save attendance</button>
+        </div>
+    </div>
+</section>
+
+<section class="panel face-mark-panel">
+    <div class="panel-header">
+        <div>
+            <h2>Face Attendance</h2>
+            <p class="subtle">The page trains the model on the selected subject and marks recognized students automatically.</p>
+        </div>
+        <div class="actions">
+            <button class="btn" type="button" id="face-start">Train and start camera</button>
+            <button class="btn secondary" type="button" id="face-stop" disabled>Stop camera</button>
+        </div>
+    </div>
+
+    <div class="face-mark-grid">
+        <div>
+            <div class="camera-preview inline-camera">
+                <video id="face-video" autoplay playsinline muted></video>
+                <canvas id="face-canvas" hidden></canvas>
+            </div>
+            <div class="camera-status" id="face-status">Select a subject, then start camera marking.</div>
+        </div>
+        <div class="face-log">
+            <h3>Recognition log</h3>
+            <div id="face-log-list" class="notice-list">
+                <div class="empty-state">No camera activity yet.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="panel">
+    <form id="manual-attendance-form" action="/save_attendance" method="POST">
+        <div class="panel-header">
+            <div>
+                <h2>Manual Attendance</h2>
+                <p class="subtle">Use this table when you need to adjust or submit all student statuses manually.</p>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Roll No</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student[0] }}</td>
+                        <td>{{ student[1] }}</td>
+                        <td>
+                            <select name="attendance_{{ student[0] }}" required>
+                                <option value="Present">Present</option>
+                                <option value="Absent">Absent</option>
+                            </select>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="empty-state">No students are available for attendance.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</section>
+
+<script>
+    const faceVideo = document.getElementById("face-video");
+    const faceCanvas = document.getElementById("face-canvas");
+    const faceStatus = document.getElementById("face-status");
+    const faceStartButton = document.getElementById("face-start");
+    const faceStopButton = document.getElementById("face-stop");
+    const faceLogList = document.getElementById("face-log-list");
+    const subjectSelect = document.getElementById("attendance-subject");
+
+    let faceStream = null;
+    let recognitionTimer = null;
+    let recognitionBusy = false;
+    const recentMessages = new Map();
+
+    function logFaceMessage(message, type = "neutral") {
+        const existingAt = recentMessages.get(message);
+        const now = Date.now();
+        if (existingAt && now - existingAt < 2500) {
+            return;
+        }
+        recentMessages.set(message, now);
+
+        if (faceLogList.querySelector(".empty-state")) {
+            faceLogList.innerHTML = "";
+        }
+
+        const item = document.createElement("div");
+        item.className = "record-card face-log-item";
+        item.innerHTML = `<h3>${type === "marked" ? "Marked" : type === "existing" ? "Already marked" : "Status"}</h3><p>${message}</p>`;
+        faceLogList.prepend(item);
+
+        while (faceLogList.children.length > 8) {
+            faceLogList.removeChild(faceLogList.lastElementChild);
+        }
+    }
+
+    function setFaceStatus(message) {
+        faceStatus.textContent = message;
+    }
+
+    async function prepareFaceModel() {
+        setFaceStatus("Training face model...");
+        const response = await fetch("/prepare_face_marking", { method: "POST" });
+        const result = await response.json();
+        if (!result.ok) {
+            throw new Error(result.message);
+        }
+        setFaceStatus(result.message);
+    }
+
+    async function startFaceCamera() {
+        const subject = subjectSelect.value;
+        if (!subject) {
+            setFaceStatus("Select a subject before starting face attendance.");
+            subjectSelect.focus();
+            return;
+        }
+
+        faceStartButton.disabled = true;
+        try {
+            await prepareFaceModel();
+            faceStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    facingMode: "user"
+                },
+                audio: false
+            });
+            faceVideo.srcObject = faceStream;
+            await faceVideo.play();
+            faceStopButton.disabled = false;
+            setFaceStatus("Camera running. Students will be marked when recognized.");
+            recognitionTimer = window.setInterval(sendRecognitionFrame, 1200);
+        } catch (error) {
+            faceStartButton.disabled = false;
+            faceStopButton.disabled = true;
+            setFaceStatus(error.message || "Face attendance could not start.");
+            logFaceMessage(error.message || "Face attendance could not start.");
+        }
+    }
+
+    function stopFaceCamera() {
+        if (recognitionTimer) {
+            window.clearInterval(recognitionTimer);
+        }
+        recognitionTimer = null;
+        recognitionBusy = false;
+        if (faceStream) {
+            faceStream.getTracks().forEach((track) => track.stop());
+        }
+        faceStream = null;
+        faceVideo.srcObject = null;
+        faceStartButton.disabled = false;
+        faceStopButton.disabled = true;
+        setFaceStatus("Camera stopped.");
+    }
+
+    async function sendRecognitionFrame() {
+        if (recognitionBusy || !faceVideo.videoWidth || !faceVideo.videoHeight) {
+            return;
+        }
+
+        recognitionBusy = true;
+        faceCanvas.width = faceVideo.videoWidth;
+        faceCanvas.height = faceVideo.videoHeight;
+        faceCanvas.getContext("2d").drawImage(faceVideo, 0, 0);
+
+        try {
+            const response = await fetch("/recognize_face_frame", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    subject: subjectSelect.value,
+                    frame: faceCanvas.toDataURL("image/jpeg", 0.85)
+                })
+            });
+            const result = await response.json();
+            setFaceStatus(result.message);
+
+            if (result.status === "inserted" || result.status === "updated") {
+                logFaceMessage(result.message, "marked");
+            } else if (result.status === "existing") {
+                logFaceMessage(result.message, "existing");
+            } else if (result.status !== "waiting") {
+                logFaceMessage(result.message);
+            }
+        } catch (error) {
+            setFaceStatus("Recognition request failed.");
+            logFaceMessage("Recognition request failed.");
+        } finally {
+            recognitionBusy = false;
+        }
+    }
+
+    faceStartButton.addEventListener("click", startFaceCamera);
+    faceStopButton.addEventListener("click", stopFaceCamera);
+
+    window.addEventListener("DOMContentLoaded", () => {
+        window.setTimeout(startFaceCamera, 300);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "_layout.html" %}
+{% set active = "students" %}
+
+{% block title %}Edit Student{% endblock %}
+{% block page_title %}Edit Student{% endblock %}
+{% block page_subtitle %}Update the student details used in attendance reports.{% endblock %}
+
+{% block page_actions %}
+<a class="btn secondary" href="/manage_students">Back to students</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+    {% if student %}
+    <form action="/update_student" method="POST" class="form-grid">
+        <input type="hidden" name="roll_no" value="{{ student[0] }}">
+        <div class="form-row">
+            <label>Roll No</label>
+            <input type="text" value="{{ student[0] }}" disabled>
+        </div>
+        <div class="form-row">
+            <label>Name</label>
+            <input type="text" name="name" value="{{ student[1] }}" required>
+        </div>
+        <div class="form-row">
+            <label>Course</label>
+            <input type="text" name="course" value="{{ student[2] }}" required>
+        </div>
+        <div class="form-row">
+            <label>Semester</label>
+            <input type="text" name="semester" value="{{ student[3] }}" required>
+        </div>
+        <div class="form-row">
+            <label>Section</label>
+            <input type="text" name="section" value="{{ student[4] }}" required>
+        </div>
+        <div class="form-row">
+            <label>Email <span class="field-hint">Optional</span></label>
+            <input type="email" name="email" value="{{ student[5] }}">
+        </div>
+        <div class="form-row">
+            <label>Phone <span class="field-hint">Optional</span></label>
+            <input type="text" name="phone" value="{{ student[6] }}">
+        </div>
+        <div class="form-row">
+            <label>Account Status</label>
+            <select name="is_active">
+                <option value="1" {% if student_user and student_user[1] == 1 %}selected{% endif %}>Active</option>
+                <option value="0" {% if not student_user or student_user[1] == 0 %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label>New Password</label>
+            <input type="password" name="password" placeholder="Leave blank to keep current password">
+        </div>
+        <div class="form-row">
+            <label>&nbsp;</label>
+            <button class="btn" type="submit">Update student</button>
+        </div>
+    </form>
+    {% else %}
+    <div class="empty-state">Student record not found.</div>
+    {% endif %}
+</section>
+{% endblock %}

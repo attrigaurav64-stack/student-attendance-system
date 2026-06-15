@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendancePro Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="login-page">
+    <main class="login-shell">
+        <header class="login-topbar">
+            <div class="login-identity">
+                <div>
+                    <strong>AttendancePro</strong>
+                    <span>Institute Attendance System</span>
+                </div>
+            </div>
+            <a class="login-recovery" href="/forgot_password">Recover password</a>
+        </header>
+
+        {% if error %}
+        <div class="alert login-alert">{{ error }}</div>
+        {% endif %}
+
+        <section class="login-console">
+            <aside class="role-picker">
+                <div class="login-intro">
+                    <span class="brand-kicker">Secure access</span>
+                    <h1>Sign in to your workspace</h1>
+                    <p>Select the portal that matches your assigned ID.</p>
+                </div>
+
+                <div class="role-tabs" aria-label="Login role">
+                    <button class="role-tab active" type="button" data-role-target="admin" aria-pressed="true">
+                        <span class="role-mark">A</span>
+                        <span class="role-copy">
+                            <strong>Admin</strong>
+                            <small>Users, notices, reports</small>
+                        </span>
+                    </button>
+                    <button class="role-tab" type="button" data-role-target="teacher" aria-pressed="false">
+                        <span class="role-mark">T</span>
+                        <span class="role-copy">
+                            <strong>Teacher</strong>
+                            <small>Attendance and classes</small>
+                        </span>
+                    </button>
+                    <button class="role-tab" type="button" data-role-target="student" aria-pressed="false">
+                        <span class="role-mark">S</span>
+                        <span class="role-copy">
+                            <strong>Student</strong>
+                            <small>Records and profile</small>
+                        </span>
+                    </button>
+                </div>
+
+                <div class="login-note">
+                    <strong>Use assigned credentials only.</strong>
+                    <span>Teachers sign in with teacher ID. Students sign in with roll number.</span>
+                </div>
+            </aside>
+
+            <section class="login-panel">
+                <div class="role-forms">
+                    <form class="role-form active" data-role-panel="admin" action="/login" method="POST">
+                        <input type="hidden" name="role" value="admin">
+                        <div class="role-form-heading">
+                            <span class="brand-kicker">Admin portal</span>
+                            <h2>Administration</h2>
+                            <p>Manage institutional data and attendance workflows.</p>
+                        </div>
+                        <div class="field">
+                            <label for="admin-username">Admin Login ID</label>
+                            <input id="admin-username" type="text" name="username" autocomplete="username" required>
+                        </div>
+                        <div class="field">
+                            <label for="admin-password">Password</label>
+                            <input id="admin-password" type="password" name="password" autocomplete="current-password" required>
+                        </div>
+                        <button class="btn" type="submit">Open admin workspace</button>
+                    </form>
+
+                    <form class="role-form" data-role-panel="teacher" action="/login" method="POST">
+                        <input type="hidden" name="role" value="teacher">
+                        <div class="role-form-heading">
+                            <span class="brand-kicker">Teacher portal</span>
+                            <h2>Teacher Desk</h2>
+                            <p>Mark attendance and review class records.</p>
+                        </div>
+                        <div class="field">
+                            <label for="teacher-username">Teacher ID</label>
+                            <input id="teacher-username" type="text" name="username" autocomplete="username" required>
+                        </div>
+                        <div class="field">
+                            <label for="teacher-password">Password</label>
+                            <input id="teacher-password" type="password" name="password" autocomplete="current-password" required>
+                        </div>
+                        <button class="btn" type="submit">Open teacher workspace</button>
+                    </form>
+
+                    <form class="role-form" data-role-panel="student" action="/login" method="POST">
+                        <input type="hidden" name="role" value="student">
+                        <div class="role-form-heading">
+                            <span class="brand-kicker">Student portal</span>
+                            <h2>Student Portal</h2>
+                            <p>View attendance history, profile details, and reports.</p>
+                        </div>
+                        <div class="field">
+                            <label for="student-username">Roll No</label>
+                            <input id="student-username" type="text" name="username" autocomplete="username" required>
+                        </div>
+                        <div class="field">
+                            <label for="student-password">Password</label>
+                            <input id="student-password" type="password" name="password" autocomplete="current-password" required>
+                        </div>
+                        <button class="btn" type="submit">Open student portal</button>
+                    </form>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        const roleTabs = document.querySelectorAll("[data-role-target]");
+        const rolePanels = document.querySelectorAll("[data-role-panel]");
+
+        roleTabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                const target = tab.dataset.roleTarget;
+
+                roleTabs.forEach((item) => {
+                    item.classList.toggle("active", item === tab);
+                    item.setAttribute("aria-pressed", item === tab ? "true" : "false");
+                });
+
+                rolePanels.forEach((panel) => {
+                    panel.classList.toggle("active", panel.dataset.rolePanel === target);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

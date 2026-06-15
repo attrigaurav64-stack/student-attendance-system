@@ -1,0 +1,227 @@
+AI Smart Attendance System - How to Run and Use
+================================================
+
+Project root:
+D:\Projects\Student_Attendance_System\Student_Attendance_System
+
+
+1. Create and start the Python environment
+------------------------------------------
+
+Open PowerShell in the project root and run:
+
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+Start the Flask app:
+
+python app.py
+
+Open the URL shown in the terminal:
+
+http://127.0.0.1:5000
+
+Stop the server with Ctrl+C.
+Leave the virtual environment with:
+
+deactivate
+
+
+2. Create the first admin account
+---------------------------------
+
+The app does not create demo users automatically. Create a real admin first:
+
+python scripts/create_admin.py --admin-id ADM-0001 --name "System Admin" --email admin@example.com --username admin_user --password "change-this-password"
+
+Login as:
+
+Role: Admin
+Login ID: admin_user
+Password: change-this-password
+
+
+3. Add teachers and students
+----------------------------
+
+Admin steps:
+
+1. Login as Admin.
+2. Open Students.
+3. Add each student with roll number and name.
+4. Student login ID is the roll number.
+5. Initial password defaults to roll number if left blank.
+6. Open Teachers.
+7. Add each teacher.
+8. Teacher login ID is the teacher ID.
+
+
+4. Capture student face samples
+-------------------------------
+
+Face recognition needs clear face samples before training.
+
+Admin steps:
+
+1. Login as Admin.
+2. Open Students.
+3. Find the student row.
+4. Click Capture face.
+5. Allow browser camera permission.
+6. Keep the student's face centered in the camera preview.
+7. Click Auto capture 20.
+8. Click Save samples.
+
+Saved samples go here:
+
+web\static\student_faces\<roll_no>\
+
+The first captured sample is also saved as the student's preview photo:
+
+web\static\student_faces\<roll_no>.jpg
+
+Repeat this for every student who should be recognized by AI attendance.
+
+
+5. Train the AI face model
+--------------------------
+
+Browser method:
+
+1. Login as Teacher.
+2. Open Mark Attendance.
+3. The page automatically trains the model using the default subject.
+4. If training fails, capture clearer student face samples from Admin > Students and try again.
+
+Manual command-line method:
+
+python -m src.attendance_system.train_model
+
+Successful training creates:
+
+models\trainer.yml
+models\label_map.json
+
+trainer.yml is the OpenCV trained recognizer.
+label_map.json maps OpenCV numeric labels back to real student roll numbers.
+
+
+6. Mark attendance with AI face recognition
+------------------------------------------
+
+Teacher steps:
+
+1. Login as Teacher.
+2. Open Mark Attendance.
+3. Subject is at the top of the page.
+4. Python is selected by default.
+5. Change subject if needed.
+6. The page automatically trains and starts the camera.
+7. If camera permission is requested, allow it.
+8. Students should come into the camera view one by one.
+9. Recognized students are marked Present for the selected subject and today's date.
+10. If a student is already marked for that subject and date, the recognition log says already marked.
+11. Click Stop camera when done.
+
+Recognition writes records to:
+
+data\attendance.db
+
+
+7. Manual attendance fallback
+-----------------------------
+
+If AI recognition is not ready:
+
+1. Login as Teacher.
+2. Open Mark Attendance.
+3. Select the subject at the top.
+4. Use the Manual Attendance table.
+5. Set each student to Present or Absent.
+6. Click Save attendance.
+
+
+8. View and export attendance
+-----------------------------
+
+Teacher/Admin:
+
+1. Open Attendance to search attendance records.
+2. Open Reports for monthly report views.
+3. Use Download Excel or Download PDF where available.
+
+Student:
+
+1. Login with roll number.
+2. Open Attendance to view personal records.
+3. Use Download report to export personal attendance.
+
+Generated files are saved under:
+
+exports\
+
+
+9. Troubleshooting face recognition
+-----------------------------------
+
+Problem: Training fails with "No faces found"
+
+Fix:
+- Capture face samples again from Admin > Students.
+- Use good lighting.
+- Keep only one face in the camera view.
+- Keep the face centered and close enough.
+- Capture at least 5 samples; 20 is better.
+
+Problem: Camera turns on but no preview appears
+
+Fix:
+- Use the in-page Capture face modal or Teacher > Mark Attendance camera panel.
+- Open the app at http://127.0.0.1:5000 or http://localhost:5000.
+- Allow camera permission in the browser.
+
+Problem: Student appears but is not recognized
+
+Fix:
+- Capture more samples for that student.
+- Train the model again.
+- Make sure the student roll number has not changed after samples were captured.
+
+Problem: Student is marked more than once
+
+Expected behavior:
+- AI face attendance does not create duplicate rows for the same student, subject, and date.
+- It reports already marked if that student was already marked.
+
+Problem: Start camera says model is not trained
+
+Fix:
+- Capture face samples.
+- Run Train and start camera again, or run:
+
+python -m src.attendance_system.train_model
+
+
+10. Correct daily workflow
+--------------------------
+
+One-time setup:
+
+1. Create admin.
+2. Add teachers.
+3. Add students.
+4. Capture face samples for students.
+5. Train model.
+
+Daily attendance:
+
+1. Teacher logs in.
+2. Teacher opens Mark Attendance.
+3. Teacher confirms subject.
+4. Camera starts automatically.
+5. Students come into view.
+6. App marks present or reports already marked.
+7. Teacher stops camera.
+8. Teacher reviews Attendance or Reports.

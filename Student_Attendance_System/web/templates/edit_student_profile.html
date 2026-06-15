@@ -1,0 +1,46 @@
+{% extends "_layout.html" %}
+{% set active = "profile" %}
+
+{% block title %}Edit Profile{% endblock %}
+{% block page_title %}Edit Profile{% endblock %}
+{% block page_subtitle %}Update your contact details and profile photo.{% endblock %}
+
+{% block page_actions %}
+<a class="btn secondary" href="/student_profile">Back to profile</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+    {% if student %}
+    <form action="/update_student_profile" method="POST" enctype="multipart/form-data" class="form-grid">
+        <input type="hidden" name="roll_no" value="{{ student[0] }}">
+        <div class="form-row">
+            <label>Roll No</label>
+            <input type="text" value="{{ student[0] }}" disabled>
+        </div>
+        <div class="form-row">
+            <label>Name</label>
+            <input type="text" value="{{ student[1] }}" disabled>
+        </div>
+        <div class="form-row">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ student[5] }}" required>
+        </div>
+        <div class="form-row">
+            <label>Phone</label>
+            <input type="text" name="phone" value="{{ student[6] }}" required>
+        </div>
+        <div class="form-row">
+            <label>Photo</label>
+            <input type="file" name="photo" accept="image/*">
+        </div>
+        <div class="form-row">
+            <label>&nbsp;</label>
+            <button class="btn" type="submit">Update profile</button>
+        </div>
+    </form>
+    {% else %}
+    <div class="empty-state">No student profile matches this login.</div>
+    {% endif %}
+</section>
+{% endblock %}

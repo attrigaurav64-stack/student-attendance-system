@@ -1,0 +1,58 @@
+{% extends "_layout.html" %}
+{% set active = "teachers" %}
+
+{% block title %}Edit Teacher{% endblock %}
+{% block page_title %}Edit Teacher{% endblock %}
+{% block page_subtitle %}Update teacher profile and login details together.{% endblock %}
+
+{% block page_actions %}
+<a class="btn secondary" href="/manage_teachers">Back to teachers</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+    {% if teacher %}
+    <form action="/update_teacher" method="POST" class="form-grid">
+        <input type="hidden" name="teacher_id" value="{{ teacher[0] }}">
+        <div class="form-row">
+            <label>Teacher ID</label>
+            <input type="text" value="{{ teacher[0] }}" disabled>
+        </div>
+        <div class="form-row">
+            <label>Name</label>
+            <input type="text" name="name" value="{{ teacher[1] }}" required>
+        </div>
+        <div class="form-row">
+            <label>Subject</label>
+            <input type="text" name="subject" value="{{ teacher[2] }}" required>
+        </div>
+        <div class="form-row">
+            <label>Department</label>
+            <input type="text" name="department" value="{{ teacher[3] }}" required>
+        </div>
+        <div class="form-row">
+            <label>Email <span class="field-hint">Optional</span></label>
+            <input type="email" name="email" value="{{ teacher[4] }}">
+        </div>
+        <div class="form-row">
+            <label>Phone <span class="field-hint">Optional</span></label>
+            <input type="text" name="phone" value="{{ teacher[5] }}">
+        </div>
+        <div class="form-row">
+            <label>Login ID</label>
+            <input type="text" value="{{ teacher[0] }}" disabled>
+        </div>
+        <div class="form-row">
+            <label>Password</label>
+            <input type="text" name="password" value="{{ teacher[7] }}" required>
+        </div>
+        <div class="form-row">
+            <label>&nbsp;</label>
+            <button class="btn" type="submit">Update teacher</button>
+        </div>
+    </form>
+    {% else %}
+    <div class="empty-state">Teacher record not found.</div>
+    {% endif %}
+</section>
+{% endblock %}

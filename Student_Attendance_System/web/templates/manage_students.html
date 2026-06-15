@@ -1,0 +1,280 @@
+{% extends "_layout.html" %}
+{% set active = "students" %}
+
+{% block title %}Students{% endblock %}
+{% block page_title %}Students{% endblock %}
+{% block page_subtitle %}Maintain the student list used by attendance, reports, and student logins.{% endblock %}
+
+{% block content %}
+{% if face_message %}
+<div class="alert {% if face_status == 'success' %}success{% endif %}">{{ face_message }}</div>
+{% endif %}
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Add Student</h2>
+            <p class="subtle">Roll number is the student identifier used across attendance records.</p>
+        </div>
+    </div>
+    <form action="/add_student" method="POST" enctype="multipart/form-data" class="form-grid">
+        <div class="form-row">
+            <label>Roll No</label>
+            <input type="text" name="roll_no" required>
+        </div>
+        <div class="form-row">
+            <label>Name</label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="form-row">
+            <label>Course</label>
+            <select name="course">
+                <option value="BE CSE">BE CSE</option>
+                <option value="BCA">BCA</option>
+                <option value="MCA">MCA</option>
+                <option value="BSc IT">BSc IT</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label>Semester</label>
+            <select name="semester">
+                {% for sem in range(1, 9) %}
+                <option value="{{ sem }}">{{ sem }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-row">
+            <label>Section</label>
+            <select name="section">
+                <option value="Section 1">Section 1</option>
+                <option value="Section 2">Section 2</option>
+                <option value="Section 3">Section 3</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label>Email <span class="field-hint">Optional</span></label>
+            <input type="email" name="email">
+        </div>
+        <div class="form-row">
+            <label>Phone <span class="field-hint">Optional</span></label>
+            <input type="text" name="phone">
+        </div>
+        <div class="form-row">
+            <label>Initial Password <span class="field-hint">Defaults to roll no</span></label>
+            <input type="password" name="password">
+        </div>
+        <div class="form-row">
+            <label>Photo <span class="field-hint">Optional</span></label>
+            <input type="file" name="photo" accept="image/*">
+        </div>
+        <div class="form-row">
+            <label>&nbsp;</label>
+            <button class="btn" type="submit">Save student</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Student Directory</h2>
+            <p class="subtle">{{ students|length }} student{{ '' if students|length == 1 else 's' }} shown.</p>
+        </div>
+        <form action="/manage_students" method="GET" class="inline-form">
+            <input type="text" name="search" placeholder="Search roll no or name" value="{{ request.args.get('search', '') }}">
+            <button class="btn secondary" type="submit">Search</button>
+        </form>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Roll No</th>
+                    <th>Name</th>
+                    <th>Course</th>
+                    <th>Semester</th>
+                    <th>Section</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>
+                        {% if student[7] %}
+                        <img class="student-photo" src="{{ url_for('static', filename=student[7].replace('static/', '')) }}" alt="{{ student[1] }}">
+                        {% else %}
+                        <div class="student-photo fallback-avatar">{{ student[1][0] if student[1] else '?' }}</div>
+                        {% endif %}
+                    </td>
+                    <td>{{ student[0] }}</td>
+                    <td>{{ student[1] }}</td>
+                    <td>{{ student[2] }}</td>
+                    <td>{{ student[3] }}</td>
+                    <td>{{ student[4] }}</td>
+                    <td>{{ student[5] }}</td>
+                    <td>{{ student[6] }}</td>
+                    <td>
+                        <div class="actions">
+                            <a class="btn secondary" href="/edit_student/{{ student[0] }}">Edit</a>
+                            <button class="btn secondary face-capture-trigger" type="button" data-roll="{{ student[0] }}" data-name="{{ student[1] }}">Capture face</button>
+                            <a class="btn danger" href="/delete_student/{{ student[0] }}" onclick="return confirm('Delete this student?')">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="empty-state">No students found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="camera-modal" id="camera-modal" hidden>
+    <div class="camera-dialog">
+        <div class="panel-header">
+            <div>
+                <h2>Capture Face Samples</h2>
+                <p class="subtle" id="camera-student-label">Select a student to begin.</p>
+            </div>
+            <button class="btn secondary" type="button" id="camera-close">Close</button>
+        </div>
+
+        <div class="camera-preview">
+            <video id="camera-video" autoplay playsinline muted></video>
+            <canvas id="camera-canvas" hidden></canvas>
+        </div>
+
+        <div class="camera-status" id="camera-status">Camera not started.</div>
+
+        <div class="actions">
+            <button class="btn secondary" type="button" id="capture-sample">Capture sample</button>
+            <button class="btn secondary" type="button" id="auto-capture">Auto capture 20</button>
+            <button class="btn" type="button" id="save-samples" disabled>Save samples</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const cameraModal = document.getElementById("camera-modal");
+    const cameraVideo = document.getElementById("camera-video");
+    const cameraCanvas = document.getElementById("camera-canvas");
+    const cameraStatus = document.getElementById("camera-status");
+    const cameraStudentLabel = document.getElementById("camera-student-label");
+    const saveSamplesButton = document.getElementById("save-samples");
+    const captureSampleButton = document.getElementById("capture-sample");
+    const autoCaptureButton = document.getElementById("auto-capture");
+    const cameraCloseButton = document.getElementById("camera-close");
+
+    let cameraStream = null;
+    let selectedRollNo = "";
+    let faceSamples = [];
+
+    function setCameraStatus(message) {
+        cameraStatus.textContent = message;
+    }
+
+    function updateSaveState() {
+        saveSamplesButton.disabled = faceSamples.length < 5;
+        setCameraStatus(`${faceSamples.length} sample${faceSamples.length === 1 ? "" : "s"} captured. Capture at least 5; 20 is better.`);
+    }
+
+    async function startBrowserCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setCameraStatus("Browser camera access is not available. Use http://127.0.0.1 or localhost.");
+            return;
+        }
+
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 640 },
+                height: { ideal: 480 },
+                facingMode: "user"
+            },
+            audio: false
+        });
+        cameraVideo.srcObject = cameraStream;
+        await cameraVideo.play();
+        setCameraStatus("Camera ready. Keep the student's face centered and capture samples.");
+    }
+
+    function stopBrowserCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach((track) => track.stop());
+        }
+        cameraStream = null;
+        cameraVideo.srcObject = null;
+    }
+
+    function captureSample() {
+        if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
+            setCameraStatus("Camera preview is not ready yet.");
+            return;
+        }
+
+        cameraCanvas.width = cameraVideo.videoWidth;
+        cameraCanvas.height = cameraVideo.videoHeight;
+        cameraCanvas.getContext("2d").drawImage(cameraVideo, 0, 0);
+        faceSamples.push(cameraCanvas.toDataURL("image/jpeg", 0.88));
+        updateSaveState();
+    }
+
+    async function autoCaptureSamples() {
+        autoCaptureButton.disabled = true;
+        for (let index = faceSamples.length; index < 20; index += 1) {
+            captureSample();
+            await new Promise((resolve) => setTimeout(resolve, 220));
+        }
+        autoCaptureButton.disabled = false;
+    }
+
+    async function saveSamples() {
+        saveSamplesButton.disabled = true;
+        setCameraStatus("Saving samples...");
+
+        const response = await fetch("/save_face_samples", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                roll_no: selectedRollNo,
+                samples: faceSamples
+            })
+        });
+        const result = await response.json();
+
+        stopBrowserCamera();
+        const status = result.ok ? "success" : "error";
+        window.location.href = `/manage_students?face_status=${status}&face_message=${encodeURIComponent(result.message)}`;
+    }
+
+    document.querySelectorAll(".face-capture-trigger").forEach((button) => {
+        button.addEventListener("click", async () => {
+            selectedRollNo = button.dataset.roll;
+            faceSamples = [];
+            saveSamplesButton.disabled = true;
+            cameraStudentLabel.textContent = `${button.dataset.name} (${selectedRollNo})`;
+            cameraModal.hidden = false;
+            setCameraStatus("Starting camera...");
+
+            try {
+                await startBrowserCamera();
+            } catch (error) {
+                setCameraStatus("Camera permission failed or no camera was found.");
+            }
+        });
+    });
+
+    captureSampleButton.addEventListener("click", captureSample);
+    autoCaptureButton.addEventListener("click", autoCaptureSamples);
+    saveSamplesButton.addEventListener("click", saveSamples);
+    cameraCloseButton.addEventListener("click", () => {
+        stopBrowserCamera();
+        cameraModal.hidden = true;
+    });
+</script>
+{% endblock %}

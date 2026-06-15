@@ -1,0 +1,50 @@
+{% extends "_layout.html" %}
+{% set active = "notices" %}
+
+{% block title %}Notices{% endblock %}
+{% block page_title %}Notices{% endblock %}
+{% block page_subtitle %}Publish messages that appear on teacher and student dashboards.{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <div class="panel-header">
+        <h2>Add Notice</h2>
+    </div>
+    <form action="/add_notice" method="POST" class="form-grid">
+        <div class="form-row">
+            <label>Title</label>
+            <input type="text" name="title" required>
+        </div>
+        <div class="form-row full-span">
+            <label>Message</label>
+            <textarea name="message" required></textarea>
+        </div>
+        <div class="form-row">
+            <label>&nbsp;</label>
+            <button class="btn" type="submit">Publish notice</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>Published Notices</h2>
+    </div>
+    <div class="notice-list">
+        {% for notice in notices %}
+        <article class="record-card">
+            <div class="panel-header">
+                <div>
+                    <h3>{{ notice[1] }}</h3>
+                    <span class="subtle">{{ notice[3] }}</span>
+                </div>
+                <a class="btn danger" href="/delete_notice/{{ notice[0] }}" onclick="return confirm('Delete this notice?')">Delete</a>
+            </div>
+            <p>{{ notice[2] }}</p>
+        </article>
+        {% else %}
+        <div class="empty-state">No notices have been published.</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

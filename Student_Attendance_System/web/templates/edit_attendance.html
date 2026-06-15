@@ -1,0 +1,49 @@
+{% extends "_layout.html" %}
+{% set active = "attendance" %}
+
+{% block title %}Edit Attendance{% endblock %}
+{% block page_title %}Edit Attendance{% endblock %}
+{% block page_subtitle %}Update one submitted attendance status.{% endblock %}
+
+{% block page_actions %}
+<a class="btn secondary" href="/view_attendance">Back to attendance</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+    {% if attendance %}
+    <form action="/update_attendance" method="POST" class="form-grid">
+        <input type="hidden" name="attendance_id" value="{{ attendance[0] }}">
+        <div class="form-row">
+            <label>Roll No</label>
+            <input type="text" value="{{ attendance[1] }}" disabled>
+        </div>
+        <div class="form-row">
+            <label>Student</label>
+            <input type="text" value="{{ attendance[2] }}" disabled>
+        </div>
+        <div class="form-row">
+            <label>Subject</label>
+            <input type="text" value="{{ attendance[3] }}" disabled>
+        </div>
+        <div class="form-row">
+            <label>Date</label>
+            <input type="text" value="{{ attendance[4] }}" disabled>
+        </div>
+        <div class="form-row">
+            <label>Status</label>
+            <select name="status" required>
+                <option value="Present" {% if attendance[5] == 'Present' %}selected{% endif %}>Present</option>
+                <option value="Absent" {% if attendance[5] == 'Absent' %}selected{% endif %}>Absent</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label>&nbsp;</label>
+            <button class="btn" type="submit">Update attendance</button>
+        </div>
+    </form>
+    {% else %}
+    <div class="empty-state">Attendance record not found.</div>
+    {% endif %}
+</section>
+{% endblock %}

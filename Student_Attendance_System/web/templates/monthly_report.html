@@ -1,0 +1,55 @@
+{% extends "_layout.html" %}
+{% set active = "reports" %}
+
+{% block title %}Monthly Report{% endblock %}
+{% block page_title %}Monthly Report{% endblock %}
+{% block page_subtitle %}Review attendance records for a selected month or all months.{% endblock %}
+
+{% block page_actions %}
+<a class="btn secondary" href="/download_pdf_report">Download PDF</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <form action="/monthly_report" method="GET" class="inline-form">
+        <input type="month" name="month" value="{{ request.args.get('month', '') }}">
+        <button class="btn" type="submit">Apply month</button>
+        <a class="btn secondary" href="/monthly_report">Clear</a>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>Report Records</h2>
+        <span class="badge neutral">{{ records|length }} entries</span>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Roll No</th>
+                    <th>Student</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record[1] }}</td>
+                    <td>{{ record[2] }}</td>
+                    <td>{{ record[3] }}</td>
+                    <td>{{ record[4] }}</td>
+                    <td><span class="badge {{ 'present' if record[5] == 'Present' else 'absent' }}">{{ record[5] }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="empty-state">No records found for this report.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

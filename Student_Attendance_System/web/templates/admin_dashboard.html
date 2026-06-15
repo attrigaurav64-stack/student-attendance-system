@@ -1,0 +1,128 @@
+{% extends "_layout.html" %}
+{% set active = "admin" %}
+
+{% block title %}Admin Overview{% endblock %}
+{% block page_title %}Admin Overview{% endblock %}
+{% block page_subtitle %}A single view of attendance activity, registered students, and teaching staff.{% endblock %}
+
+{% block page_actions %}
+<a class="btn" href="/manage_students">Add student</a>
+<a class="btn secondary" href="/manage_teachers">Manage teachers</a>
+{% endblock %}
+
+{% block content %}
+<section class="stats-grid">
+    <div class="stat-card">
+        <span>Students</span>
+        <strong>{{ total_students }}</strong>
+        <small>Registered profiles</small>
+    </div>
+    <div class="stat-card">
+        <span>Teachers</span>
+        <strong>{{ total_teachers }}</strong>
+        <small>Teaching accounts</small>
+    </div>
+    <div class="stat-card">
+        <span>Attendance Records</span>
+        <strong>{{ total_attendance }}</strong>
+        <small>All submitted entries</small>
+    </div>
+    <div class="stat-card">
+        <span>Overall Presence</span>
+        <strong>{{ percentage }}%</strong>
+        <small>{{ present }} present / {{ absent }} absent</small>
+    </div>
+</section>
+
+<section class="dashboard-charts">
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Attendance Split</h2>
+                <p class="subtle">Overall present versus absent records.</p>
+            </div>
+        </div>
+        <div class="donut-wrap">
+            <div class="donut-chart" style="--value: {{ percentage }};">
+                <div class="donut-center">
+                    <div>
+                        <strong>{{ percentage }}%</strong>
+                        <span>Present</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-legend">
+                <span><i class="legend-dot green"></i>{{ present }} present</span>
+                <span><i class="legend-dot red"></i>{{ absent }} absent</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Subject Activity</h2>
+                <p class="subtle">Most recorded subjects across attendance entries.</p>
+            </div>
+        </div>
+        <div class="bar-list">
+            {% for subject, total in subject_chart %}
+            <div class="bar-row">
+                <span class="bar-label">{{ subject }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill blue" style="--width: {{ (total / max_subject_total * 100) if max_subject_total else 0 }}%;"></div>
+                </div>
+                <span class="bar-value">{{ total }}</span>
+            </div>
+            {% else %}
+            <div class="empty-state">No attendance records available for subject activity.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Course Distribution</h2>
+            <p class="subtle">Registered students grouped by course.</p>
+        </div>
+    </div>
+    <div class="bar-list">
+        {% for course, total in course_chart %}
+        <div class="bar-row">
+            <span class="bar-label">{{ course }}</span>
+            <div class="bar-track">
+                <div class="bar-fill green" style="--width: {{ (total / max_course_total * 100) if max_course_total else 0 }}%;"></div>
+            </div>
+            <span class="bar-value">{{ total }}</span>
+        </div>
+        {% else %}
+        <div class="empty-state">No students registered yet.</div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Administration</h2>
+            <p class="subtle">Use the same source of student, teacher, notice, and attendance data across the portal.</p>
+        </div>
+    </div>
+    <div class="grid-3">
+        <a class="record-card" href="/manage_students">
+            <h3>Students</h3>
+            <p>Register, search, edit, and remove student records.</p>
+        </a>
+        <a class="record-card" href="/manage_teachers">
+            <h3>Teachers</h3>
+            <p>Maintain teacher profiles and login accounts.</p>
+        </a>
+        <a class="record-card" href="/view_attendance">
+            <h3>Attendance</h3>
+            <p>Review attendance records with date and subject filters.</p>
+        </a>
+    </div>
+</section>
+{% endblock %}

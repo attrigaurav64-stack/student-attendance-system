@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.pyc
+data/*.db
+data/legacy/
+exports/
+models/trainer.yml
+web/static/student_faces/*.jpg
+web/static/student_faces/*.jpeg
+web/static/student_faces/*.png
+.dist/
+exports/

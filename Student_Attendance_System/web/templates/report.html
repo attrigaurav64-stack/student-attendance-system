@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width,
+initial-scale=1.0">
+
+<title>
+Attendance Report
+</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static',
+filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <h2>
+                AttendancePro
+            </h2>
+
+        </div>
+
+        <nav>
+
+            <a href="/dashboard">
+
+                Dashboard
+
+            </a>
+
+            <a href="/report"
+            class="active">
+
+                Reports
+
+            </a>
+
+            <a href="/export">
+
+                Export Excel
+
+            </a>
+
+            <a href="/logout">
+
+                Logout
+
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <!-- Main Content -->
+
+    <main class="main-content">
+
+        <div class="header">
+
+            <div>
+
+                <h1>
+                    Attendance Report
+                </h1>
+
+                <p>
+                    Student attendance
+                    percentage overview
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Report Table -->
+
+        <section class="card">
+
+            <div
+            class="table-header">
+
+                <h2>
+                    Attendance Percentage
+                </h2>
+
+            </div>
+
+            <div
+            class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Roll No
+                            </th>
+
+                            <th>
+                                Student Name
+                            </th>
+
+                            <th>
+                                Attendance %
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for student in report_data %}
+
+                    <tr>
+
+                        <td>
+                            {{ student.roll_no }}
+                        </td>
+
+                        <td>
+                            {{ student.name }}
+                        </td>
+
+                        <td>
+                            {{ student.percentage }}%
+                        </td>
+
+                        <td>
+
+                            {% if student.percentage >= 75 %}
+
+                            <span
+                            class="status good">
+
+                            Good
+
+                            </span>
+
+                            {% else %}
+
+                            <span
+                            class="status low">
+
+                            Low
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

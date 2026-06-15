@@ -1,0 +1,53 @@
+{% extends "_layout.html" %}
+{% set active = "profile" %}
+
+{% block title %}Student Profile{% endblock %}
+{% block page_title %}Student Profile{% endblock %}
+{% block page_subtitle %}Profile information attached to your roll number.{% endblock %}
+
+{% block page_actions %}
+<a class="btn" href="/edit_student_profile">Edit profile</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+    {% if student %}
+    <div class="profile-summary spaced">
+        {% if student[7] %}
+        <img class="avatar large" src="{{ url_for('static', filename=student[7].replace('static/', '')) }}" alt="{{ student[1] }}">
+        {% else %}
+        <div class="avatar large fallback-avatar">{{ student[1][0] if student[1] else '?' }}</div>
+        {% endif %}
+        <div>
+            <h2>{{ student[1] }}</h2>
+            <p class="subtle">Roll No {{ student[0] }}</p>
+        </div>
+    </div>
+
+    <div class="detail-list">
+        <div class="detail-item">
+            <span>Course</span>
+            <strong>{{ student[2] }}</strong>
+        </div>
+        <div class="detail-item">
+            <span>Semester</span>
+            <strong>{{ student[3] }}</strong>
+        </div>
+        <div class="detail-item">
+            <span>Section</span>
+            <strong>{{ student[4] }}</strong>
+        </div>
+        <div class="detail-item">
+            <span>Email</span>
+            <strong>{{ student[5] }}</strong>
+        </div>
+        <div class="detail-item">
+            <span>Phone</span>
+            <strong>{{ student[6] }}</strong>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">No student profile matches this login.</div>
+    {% endif %}
+</section>
+{% endblock %}

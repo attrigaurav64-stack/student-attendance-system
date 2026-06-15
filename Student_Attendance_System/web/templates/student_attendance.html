@@ -1,0 +1,53 @@
+{% extends "_layout.html" %}
+{% set active = "student_attendance" %}
+
+{% block title %}My Attendance{% endblock %}
+{% block page_title %}My Attendance{% endblock %}
+{% block page_subtitle %}Attendance records associated with your roll number.{% endblock %}
+
+{% block page_actions %}
+<a class="btn secondary" href="/student_export_attendance">Download report</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <form action="/student_attendance" method="GET" class="inline-form">
+        <input type="date" name="date" value="{{ request.args.get('date', '') }}">
+        <button class="btn" type="submit">Apply date</button>
+        <a class="btn secondary" href="/student_attendance">Clear</a>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>Attendance Records</h2>
+        <span class="badge neutral">{{ records|length }} entries</span>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Roll No</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record[0] }}</td>
+                    <td>{{ record[1] }}</td>
+                    <td>{{ record[2] }}</td>
+                    <td><span class="badge {{ 'present' if record[3] == 'Present' else 'absent' }}">{{ record[3] }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="empty-state">No attendance records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

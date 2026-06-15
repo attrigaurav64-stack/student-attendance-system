@@ -1,0 +1,79 @@
+{% extends "_layout.html" %}
+{% set active = "attendance" %}
+
+{% block title %}Attendance Records{% endblock %}
+{% block page_title %}Attendance Records{% endblock %}
+{% block page_subtitle %}Search attendance entries by student, subject, or date.{% endblock %}
+
+{% block page_actions %}
+<a class="btn secondary" href="/export_attendance">Download Excel</a>
+<a class="btn secondary" href="/download_pdf_report">Download PDF</a>
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <form action="/view_attendance" method="GET" class="form-grid">
+        <div class="form-row">
+            <label>Student</label>
+            <input type="text" name="search" value="{{ request.args.get('search', '') }}" placeholder="Roll no or name">
+        </div>
+        <div class="form-row">
+            <label>Date</label>
+            <input type="date" name="date" value="{{ request.args.get('date', '') }}">
+        </div>
+        <div class="form-row">
+            <label>Subject</label>
+            <input type="text" name="subject" value="{{ request.args.get('subject', '') }}" placeholder="Subject">
+        </div>
+        <div class="form-row">
+            <label>&nbsp;</label>
+            <button class="btn" type="submit">Apply filters</button>
+        </div>
+    </form>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>Records</h2>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Roll No</th>
+                    <th>Student</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record[1] }}</td>
+                    <td>{{ record[2] }}</td>
+                    <td>{{ record[3] }}</td>
+                    <td>{{ record[4] }}</td>
+                    <td><span class="badge {{ 'present' if record[5] == 'Present' else 'absent' }}">{{ record[5] }}</span></td>
+                    <td>
+                        {% if session.get('role') == 'teacher' %}
+                        <div class="actions">
+                            <a class="btn secondary" href="/edit_attendance/{{ record[0] }}">Edit</a>
+                            <a class="btn danger" href="/delete_attendance/{{ record[0] }}" onclick="return confirm('Delete this attendance record?')">Delete</a>
+                        </div>
+                        {% else %}
+                        <span class="badge neutral">Read only</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty-state">No attendance records match the current filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance System</title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static',
+    filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>Student Attendance System</h1>
+        <p>Manage student attendance professionally</p>
+    </div>
+
+    <div class="card">
+
+        <h2>Add Student</h2>
+
+        <form action="/add_student"
+        method="POST">
+
+            <input
+            type="text"
+            name="roll_no"
+            placeholder="Enter Roll Number"
+            required>
+
+            <input
+            type="text"
+            name="name"
+            placeholder="Enter Student Name"
+            required>
+
+            <button type="submit">
+                Add Student
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Students List</h2>
+
+        <table>
+
+            <tr>
+                <th>Roll Number</th>
+                <th>Student Name</th>
+                <th>Attendance</th>
+            </tr>
+
+            {% for student in students %}
+
+            <tr>
+
+                <td>{{ student[0] }}</td>
+
+                <td>{{ student[1] }}</td>
+
+                <td>
+
+                    <a href="/mark_attendance/{{ student[0] }}">
+
+                        <button class="present-btn">
+                            Mark Present
+                        </button>
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>
