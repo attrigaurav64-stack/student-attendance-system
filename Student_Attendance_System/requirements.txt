@@ -4,6 +4,7 @@ Werkzeug
 gunicorn
 openpyxl
 reportlab
-opencv-python
+opencv-contrib-python-headless
 numpy
 pandas
+Pillow
