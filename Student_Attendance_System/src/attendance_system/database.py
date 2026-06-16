@@ -185,6 +185,23 @@ def sync_identity_data(cursor):
     sync_teacher_users(cursor)
     sync_student_users(cursor)
     deactivate_orphan_users(cursor)
+    
+    # Auto-create a default admin if none exist (needed for fresh deployments)
+    count = cursor.execute("SELECT COUNT(*) FROM admins").fetchone()[0]
+    if count == 0:
+        cursor.execute("""
+        INSERT INTO admins (admin_id, name, email, phone, username, password, created_at, updated_at)
+        VALUES ('ADM-0001', 'Administrator', '', '', 'admin', 'admin123', ?, ?)
+        """, (utc_now(), utc_now()))
+        
+        upsert_user(
+            cursor,
+            username="admin",
+            password="admin123",
+            role="admin",
+            linked_id="ADM-0001",
+            is_active=1
+        )
 
 
 def remove_legacy_default_users(cursor):
