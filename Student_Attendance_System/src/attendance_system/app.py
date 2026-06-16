@@ -1479,7 +1479,7 @@ def download_pdf_report():
     conn.close()
 
     file_name = EXPORT_DIR / "attendance_report.pdf"
-    doc = SimpleDocTemplate(file_name)
+    doc = SimpleDocTemplate(str(file_name))
     elements = []
 
     style_sheet = styles.getSampleStyleSheet()
