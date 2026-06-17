@@ -54,6 +54,8 @@ def get_images_and_labels(images_dir):
     for image_path, roll_no in image_paths:
         try:
             image = Image.open(image_path).convert("L")
+            # Scale down to speed up face detection and prevent OOM on large webcam captures
+            image.thumbnail((500, 500))
             image_array = np.array(image, "uint8")
             faces = detector.detectMultiScale(
                 image_array,
